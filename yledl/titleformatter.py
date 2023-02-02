@@ -21,7 +21,7 @@ from datetime import datetime
 
 class TitleFormatter:
     def __init__(self,
-                 template='${series_separator}${title}: ${episode_separator}${timestamp}',
+                 template='${series}/${episode}',
                  placeholder=None):
         self.template = template
         self.tokens = self._parse_template(template)

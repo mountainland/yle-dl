@@ -90,7 +90,7 @@ class IOContext:
     ffmpeg_binary: str = attr.field(default='ffmpeg', converter=ffmpeg_default)
     ffprobe_binary: str = attr.field(default='ffprobe', converter=ffprobe_default)
     wget_binary: str = attr.field(default='wget', converter=wget_default)
-    create_dirs: bool = attr.field(default=False)
+    create_dirs: bool = attr.field(default=True)
     xattr: bool = attr.field(default=False)
 
     def ffprobe(self):
