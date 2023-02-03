@@ -1,0 +1,3 @@
+https://areena.api.yle.fi/v1/ui/players/1-2839038.json?language=fi&v=10&client=yle-areena-web&app_id=areena-web-items&app_key=v9No1mV0omg2BppmDkmDL6tGKw1pRFZt
+
+tuolta saa id:llä vanhentumistiedon

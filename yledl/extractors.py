@@ -1019,7 +1019,7 @@ class YleUutisetExtractor(AreenaExtractor):
         tree = self.httpclient.download_html_tree(url)
         if tree is None:
             return []
-
+            
         state = None
         state_script_nodes = tree.xpath(
             '//script[@type="text/javascript" and '
