@@ -30,20 +30,30 @@ from .io import OutputFileNameGenerator
 from .streamflavor import FailedFlavor
 
 
-logger = logging.getLogger('yledl')
+logger = logging.getLogger("yledl")
 
 
 class YleDlDownloader:
-    def __init__(self, geolocation, title_formatter, httpclient,
-                 _extractor_factory=extractor_factory):
+    def __init__(
+        self,
+        geolocation,
+        title_formatter,
+        httpclient,
+        _extractor_factory=extractor_factory,
+    ):
         self.geolocation = geolocation
         self.title_formatter = title_formatter
         self.httpclient = httpclient
         self.extractor_factory = _extractor_factory
 
     def download_clips(self, base_url, io, filters):
-        extractor = self.extractor_factory(base_url, self.language_chooser(base_url, io),
-                                           self.httpclient, self.title_formatter, io.ffprobe())
+        extractor = self.extractor_factory(
+            base_url,
+            self.language_chooser(base_url, io),
+            self.httpclient,
+            self.title_formatter,
+            io.ffprobe(),
+        )
         if not extractor:
             self.log_unsupported_url_error(base_url)
             return RD_FAILED
@@ -51,30 +61,40 @@ class YleDlDownloader:
         playlist = extractor.get_playlist(base_url, filters.latest_only)
 
         if len(playlist) > 1 and io.outputfilename is not None:
-            logger.error('The source is a playlist with multiple clips, '
-                         'but only one output file specified')
+            logger.error(
+                "The source is a playlist with multiple clips, "
+                "but only one output file specified"
+            )
             return RD_FAILED
         elif len(playlist) > 1 and extractor.title_formatter.is_constant_pattern():
-            logger.error('The source is a playlist with multiple clips, '
-                         'but --output-template is a literal: '
-                         f'{extractor.title_formatter.template}')
+            logger.error(
+                "The source is a playlist with multiple clips, "
+                "but --output-template is a literal: "
+                f"{extractor.title_formatter.template}"
+            )
             return RD_FAILED
 
         if len(playlist) == 0:
-            logger.info('No streams found')
+            logger.info("No streams found")
 
         overall_status = RD_SUCCESS
         for clip_url in playlist:
             res = self.download_with_retry(
-                clip_url, base_url, extractor, filters, io, max_retry_count=3)
+                clip_url, base_url, extractor, filters, io, max_retry_count=3
+            )
             if res != RD_SUCCESS and overall_status != RD_FAILED:
                 overall_status = res
 
         return overall_status
 
     def pipe(self, base_url, io, filters):
-        extractor = self.extractor_factory(base_url, self.language_chooser(base_url, io),
-                                           self.httpclient, self.title_formatter, io.ffprobe())
+        extractor = self.extractor_factory(
+            base_url,
+            self.language_chooser(base_url, io),
+            self.httpclient,
+            self.title_formatter,
+            io.ffprobe(),
+        )
         if not extractor:
             self.log_unsupported_url_error(base_url)
             return RD_FAILED
@@ -82,7 +102,7 @@ class YleDlDownloader:
         playlist = extractor.get_playlist(base_url)
 
         if len(playlist) == 0:
-            logger.error('No streams found')
+            logger.error("No streams found")
             return RD_SUCCESS
 
         # Can pipe one stream only. Drop other streams if there are more than one.
@@ -91,8 +111,13 @@ class YleDlDownloader:
         return self.pipe_first_available_stream(clip, filters, io)
 
     def get_urls(self, base_url, io, filters):
-        extractor = self.extractor_factory(base_url, self.language_chooser(base_url, io),
-                                           self.httpclient, self.title_formatter, io.ffprobe())
+        extractor = self.extractor_factory(
+            base_url,
+            self.language_chooser(base_url, io),
+            self.httpclient,
+            self.title_formatter,
+            io.ffprobe(),
+        )
         if not extractor:
             self.log_unsupported_url_error(base_url)
             return []
@@ -105,18 +130,28 @@ class YleDlDownloader:
                 yield valid_stream.stream_url()
 
     def get_titles(self, base_url, io, latest_only):
-        extractor = self.extractor_factory(base_url, self.language_chooser(base_url, io),
-                                           self.httpclient, self.title_formatter, io.ffprobe())
+        extractor = self.extractor_factory(
+            base_url,
+            self.language_chooser(base_url, io),
+            self.httpclient,
+            self.title_formatter,
+            io.ffprobe(),
+        )
         if not extractor:
             self.log_unsupported_url_error(base_url)
             return []
 
         clips = extractor.extract(base_url, latest_only)
-        return (sane_filename(clip.title or '', io.excludechars) for clip in clips)
+        return (sane_filename(clip.title or "", io.excludechars) for clip in clips)
 
     def get_metadata(self, base_url, io, latest_only):
-        extractor = self.extractor_factory(base_url, self.language_chooser(base_url, io),
-                                           self.httpclient, self.title_formatter, io.ffprobe())
+        extractor = self.extractor_factory(
+            base_url,
+            self.language_chooser(base_url, io),
+            self.httpclient,
+            self.title_formatter,
+            io.ffprobe(),
+        )
         if not extractor:
             self.log_unsupported_url_error(base_url)
             return []
@@ -125,15 +160,22 @@ class YleDlDownloader:
         return list(clip.metadata(io) for clip in clips)
 
     def get_playlist(self, base_url, io):
-        extractor = self.extractor_factory(base_url, self.language_chooser(base_url, io),
-                                           self.httpclient, self.title_formatter, io.ffprobe())
+        extractor = self.extractor_factory(
+            base_url,
+            self.language_chooser(base_url, io),
+            self.httpclient,
+            self.title_formatter,
+            io.ffprobe(),
+        )
         if not extractor:
             self.log_unsupported_url_error(base_url)
             return []
 
         return extractor.get_playlist(base_url)
 
-    def download_with_retry(self, clip_url, base_url, extractor, filters, io, max_retry_count):
+    def download_with_retry(
+        self, clip_url, base_url, extractor, filters, io, max_retry_count
+    ):
         attempt = 0
         if max_retry_count < 0:
             max_retry_count = 0
@@ -141,7 +183,7 @@ class YleDlDownloader:
         latest_result = RD_FAILED
         while attempt <= max_retry_count:
             if attempt > 0:
-                logger.info(f'Retry attempt {attempt} of {max_retry_count}')
+                logger.info(f"Retry attempt {attempt} of {max_retry_count}")
 
             clip = extractor.extract_clip(clip_url, base_url)
             try:
@@ -164,10 +206,10 @@ class YleDlDownloader:
         valid_streams = [s for s in streams if s.is_valid()]
 
         if not streams:
-            logger.error('No stream found')
+            logger.error("No stream found")
             return RD_FAILED
         elif not valid_streams:
-            logger.error(f'Unsupported stream: {streams[0].error_message}')
+            logger.error(f"Unsupported stream: {streams[0].error_message}")
             self.print_geo_warning(clip)
             return RD_FAILED
 
@@ -175,7 +217,7 @@ class YleDlDownloader:
 
     def download_stream(self, valid_streams, clip, io):
         for stream in valid_streams:
-            logger.debug(f'Now trying downloader {stream.name}')
+            logger.debug(f"Now trying downloader {stream.name}")
 
             output_file = self.generate_output_name(clip.title, stream, io)
             try:
@@ -198,7 +240,7 @@ class YleDlDownloader:
             return RD_FAILED
 
         if self.should_skip_downloading(outputfile, downloader, clip, io):
-            logger.info(f'{outputfile} has already been downloaded.')
+            logger.info(f"{outputfile} has already been downloaded.")
             return RD_SUCCESS
 
         self.log_output_file(outputfile)
@@ -207,7 +249,9 @@ class YleDlDownloader:
         if dl_result == RD_SUCCESS:
             self.log_output_file(outputfile, True)
             if io.xattr:
-                self.set_extended_file_attributes(outputfile, clip.metadata(io), clip.origin_url)
+                self.set_extended_file_attributes(
+                    outputfile, clip.metadata(io), clip.origin_url
+                )
             self.postprocess(io.postprocess_command, outputfile, [])
 
         return dl_result
@@ -217,10 +261,10 @@ class YleDlDownloader:
         valid_streams = [s for s in streams if s.is_valid()]
 
         if not streams:
-            logger.error('No stream found')
+            logger.error("No stream found")
             return RD_FAILED
         elif not valid_streams:
-            logger.error(f'Unsupported stream: {streams[0].error_message}')
+            logger.error(f"Unsupported stream: {streams[0].error_message}")
             self.print_geo_warning(clip)
             return RD_FAILED
 
@@ -228,7 +272,7 @@ class YleDlDownloader:
 
     def pipe_stream(self, valid_streams, clip, io):
         for stream in valid_streams:
-            logger.debug(f'Now trying downloader {stream.name}')
+            logger.debug(f"Now trying downloader {stream.name}")
 
             stream.warn_on_unsupported_feature(io)
 
@@ -251,9 +295,10 @@ class YleDlDownloader:
         limits = io.download_limits
         slicing_active = limits.start_position or 0 > 0 or limits.duration
 
-        return ((not io.overwrite and os.path.exists(outputfile)) or
-                (not slicing_active and
-                 downloader.full_stream_already_downloaded(outputfile, clip, io)))
+        return (not io.overwrite and os.path.exists(outputfile)) or (
+            not slicing_active
+            and downloader.full_stream_already_downloaded(outputfile, clip, io)
+        )
 
     def generate_output_name(self, title, downloader, io):
         generator = OutputFileNameGenerator()
@@ -264,20 +309,24 @@ class YleDlDownloader:
         if not flavors:
             return None
 
-        logger.debug('Available flavors:')
+        logger.debug("Available flavors:")
         for fl in flavors:
-            logger.debug('bitrate: {bitrate}, height: {height}, '
-                         'width: {width}'
-                         .format(**asdict(fl)))
-        logger.debug('max_height: {maxheight}, max_bitrate: {maxbitrate}'
-                     .format(**asdict(filters)))
+            logger.debug(
+                "bitrate: {bitrate}, height: {height}, "
+                "width: {width}".format(**asdict(fl))
+            )
+        logger.debug(
+            "max_height: {maxheight}, max_bitrate: {maxbitrate}".format(
+                **asdict(filters)
+            )
+        )
 
         filtered = self.apply_backend_filter(flavors, filters)
         filtered = self.apply_resolution_filters(filtered, filters)
 
         if filtered:
             selected = filtered[-1]
-            logger.debug(f'Selected flavor: {selected}')
+            logger.debug(f"Selected flavor: {selected}")
         else:
             selected = None
 
@@ -319,11 +368,10 @@ class YleDlDownloader:
             return (x.height or 0, x.bitrate or 0)
 
         filtered = [
-            fl for fl in flavors
-            if (filters.maxbitrate is None or
-                (fl.bitrate or 0) <= filters.maxbitrate) and
-            (filters.maxheight is None or
-             (fl.height or 0) <= filters.maxheight)
+            fl
+            for fl in flavors
+            if (filters.maxbitrate is None or (fl.bitrate or 0) <= filters.maxbitrate)
+            and (filters.maxheight is None or (fl.height or 0) <= filters.maxheight)
         ]
 
         if filtered:
@@ -345,19 +393,18 @@ class YleDlDownloader:
     def backend_not_enabled_flavor(self, flavors):
         supported_backends = set()
         for fl in flavors:
-            supported_backends.update(
-                s.name for s in fl.streams if s.is_valid())
+            supported_backends.update(s.name for s in fl.streams if s.is_valid())
 
-        error_messages = [s.error_message
-                          for fl in flavors
-                          for s in fl.streams if not s.is_valid()]
+        error_messages = [
+            s.error_message for fl in flavors for s in fl.streams if not s.is_valid()
+        ]
 
         if supported_backends:
             msg = f'Required backend not enabled. Try: --backend {",".join(supported_backends)}'
         elif error_messages:
             msg = error_messages[0]
         else:
-            msg = 'Stream not found'
+            msg = "Stream not found"
 
         return FailedFlavor(msg)
 
@@ -377,19 +424,20 @@ class YleDlDownloader:
             return None
 
     def print_geo_warning(self, clip):
-        if (
-            clip.region in ['Finland', None] and
-            not self.geolocation.located_in_finland(clip.webpage)
+        if clip.region in ["Finland", None] and not self.geolocation.located_in_finland(
+            clip.webpage
         ):
-            logger.error('This clip is only available in Finland '
-                         'and according to Yle you are located abroad')
+            logger.error(
+                "This clip is only available in Finland "
+                "and according to Yle you are located abroad"
+            )
 
     def log_output_file(self, outputfile, done=False):
-        if outputfile and outputfile != '-':
+        if outputfile and outputfile != "-":
             if done:
-                logger.info(f'Stream saved to {outputfile}')
+                logger.info(f"Stream saved to {outputfile}")
             else:
-                logger.info(f'Output file: {outputfile}')
+                logger.info(f"Output file: {outputfile}")
 
     def postprocess(self, postprocess_command, videofile, subtitlefiles):
         if postprocess_command:
@@ -398,9 +446,11 @@ class YleDlDownloader:
             return Subprocess().execute([args], None)
 
     def log_unsupported_url_error(self, url):
-        logger.error(f'Unsupported URL {url}.')
-        logger.error('If you think yle-dl should support this page, open a '
-                     'bug report at https://github.com/aajanki/yle-dl/issues')
+        logger.error(f"Unsupported URL {url}.")
+        logger.error(
+            "If you think yle-dl should support this page, open a "
+            "bug report at https://github.com/aajanki/yle-dl/issues"
+        )
 
     def language_chooser(self, url, io):
         if io.metadata_language:
@@ -411,7 +461,7 @@ class YleDlDownloader:
 
     def set_extended_file_attributes(self, filename, metadata, referrer_url):
         def xset(name, value_str):
-            xa.set(name, value_str.encode('utf-8')[:64*1024])
+            xa.set(name, value_str.encode("utf-8")[: 64 * 1024])
 
         try:
             from xattr import xattr
@@ -421,18 +471,18 @@ class YleDlDownloader:
 
         try:
             xa = xattr(filename)
-            if metadata.get('description'):
-                xset('user.dublincore.description', metadata['description'])
-            if metadata.get('publish_timestamp'):
-                xset('user.dublincore.date', metadata['publish_timestamp'][:10])
-            if metadata.get('episode_title'):
-                xset('user.dublincore.title', metadata['episode_title'])
+            if metadata.get("description"):
+                xset("user.dublincore.description", metadata["description"])
+            if metadata.get("publish_timestamp"):
+                xset("user.dublincore.date", metadata["publish_timestamp"][:10])
+            if metadata.get("episode_title"):
+                xset("user.dublincore.title", metadata["episode_title"])
             if referrer_url:
                 # the requested URL
-                xset('user.xdg.referrer.url', referrer_url)
-            if metadata.get('webpage'):
+                xset("user.xdg.referrer.url", referrer_url)
+            if metadata.get("webpage"):
                 # the final URL
-                xset('user.xdg.origin.url', metadata['webpage'])
+                xset("user.xdg.origin.url", metadata["webpage"])
         except OSError as exc:
             logger.warning("File system doesn't seem to support extended attributes")
-            logger.debug(f'OSError while setting xattr: {exc.strerror}')
+            logger.debug(f"OSError while setting xattr: {exc.strerror}")

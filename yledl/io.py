@@ -27,7 +27,7 @@ from .errors import FfmpegNotFoundError
 from .ffprobe import Ffprobe
 from .utils import sane_filename
 
-logger = logging.getLogger('yledl')
+logger = logging.getLogger("yledl")
 
 
 def convert_download_limits(arg):
@@ -35,19 +35,19 @@ def convert_download_limits(arg):
 
 
 def ffmpeg_default(arg):
-    return arg or 'ffmpeg'
+    return arg or "ffmpeg"
 
 
 def ffprobe_default(arg):
-    return arg or 'ffprobe'
+    return arg or "ffprobe"
 
 
 def wget_default(arg):
-    return arg or 'wget'
+    return arg or "wget"
 
 
 def random_elisa_ipv4():
-    return str(random_ip(ipaddress.ip_network('91.152.0.0/13')))
+    return str(random_ip(ipaddress.ip_network("91.152.0.0/13")))
 
 
 def random_ip(ip_network):
@@ -63,11 +63,13 @@ class DownloadLimits:
     # Seek to this position (seconds) before starting the recording
     start_position = attr.field(
         default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(int)))
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
     # Limit the duration of the recorded stream (seconds)
     duration = attr.field(
         default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(int)))
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
     # Maximum download rate (int in kb/s or "best" or "worst")
     ratelimit = attr.field(default=None)
 
@@ -79,17 +81,18 @@ class IOContext:
     destdir: Optional[str] = attr.field(default=None)
     resume: bool = attr.field(default=False)
     overwrite: bool = attr.field(default=True)
-    download_limits: Optional[DownloadLimits] = attr.field(default=None,
-                                                           converter=convert_download_limits)
-    excludechars: str = attr.field(default='*/|')
+    download_limits: Optional[DownloadLimits] = attr.field(
+        default=None, converter=convert_download_limits
+    )
+    excludechars: str = attr.field(default="*/|")
     proxy: Optional[str] = attr.field(default=None)
     x_forwarded_for: Optional[str] = attr.field(default=None)
-    subtitles: str = attr.field(default='all')
+    subtitles: str = attr.field(default="all")
     metadata_language: Optional[str] = attr.field(default=None)
     postprocess_command: Optional[str] = attr.field(default=None)
-    ffmpeg_binary: str = attr.field(default='ffmpeg', converter=ffmpeg_default)
-    ffprobe_binary: str = attr.field(default='ffprobe', converter=ffprobe_default)
-    wget_binary: str = attr.field(default='wget', converter=wget_default)
+    ffmpeg_binary: str = attr.field(default="ffmpeg", converter=ffmpeg_default)
+    ffprobe_binary: str = attr.field(default="ffprobe", converter=ffprobe_default)
+    wget_binary: str = attr.field(default="wget", converter=wget_default)
     create_dirs: bool = attr.field(default=True)
     xattr: bool = attr.field(default=False)
 
@@ -101,12 +104,14 @@ class IOContext:
 
     def ffmpeg_version(self):
         if self.ffmpeg_binary:
-            args = [self.ffmpeg_binary, '-loglevel', 'quiet', '-version']
+            args = [self.ffmpeg_binary, "-loglevel", "quiet", "-version"]
             try:
-                p = subprocess.run(args, stdout=subprocess.PIPE, universal_newlines=True)
+                p = subprocess.run(
+                    args, stdout=subprocess.PIPE, universal_newlines=True
+                )
                 if p.returncode == 0:
                     first_line = p.stdout.splitlines()[0]
-                    m = re.match(r'ffmpeg version (\d+)\.(\d+)\.(\d+)', first_line)
+                    m = re.match(r"ffmpeg version (\d+)\.(\d+)\.(\d+)", first_line)
                     if m:
                         return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
             except FileNotFoundError:
@@ -121,18 +126,16 @@ class OutputFileNameGenerator:
         destdir = io.destdir
 
         if forced_name:
-            path = self._filename_from_template(
-                forced_name, destdir, extension)
+            path = self._filename_from_template(forced_name, destdir, extension)
         else:
-            if '/' in title:
+            if "/" in title:
                 # Title contains a subdirectory
-                path, title = title.rsplit('/', maxsplit=1)
-                destdir = destdir or ''
-                for subdir in path.split('/'):
+                path, title = title.rsplit("/", maxsplit=1)
+                destdir = destdir or ""
+                for subdir in path.split("/"):
                     destdir = os.path.join(destdir, subdir)
             sanitized_title = sane_filename(title, io.excludechars)
-            path = self._filename_from_title(
-                sanitized_title, destdir, extension)
+            path = self._filename_from_title(sanitized_title, destdir, extension)
             path = self._impose_maximum_filename_length(path)
 
         dir, _ = os.path.split(path)
@@ -162,7 +165,7 @@ class OutputFileNameGenerator:
         basename, old_ext = os.path.splitext(filename)
         if not old_ext or old_ext != ext:
             if old_ext:
-                logger.warn(f'Unsupported extension {old_ext}. Replacing it with {ext}')
+                logger.warn(f"Unsupported extension {old_ext}. Replacing it with {ext}")
             return basename + ext
         else:
             return filename
@@ -174,7 +177,7 @@ class OutputFileNameGenerator:
             return filename + extension.extension
 
     def _filename_from_title(self, title, destdir, extension):
-        filename = (title or 'ylestream') + extension.extension
+        filename = (title or "ylestream") + extension.extension
         if destdir:
             filename = os.path.join(destdir, filename)
         return filename
@@ -183,7 +186,7 @@ class OutputFileNameGenerator:
         """If the last component of the path is longer than 255, shorten it."""
         head, filename = os.path.split(path)
         if len(filename) > 255:
-            filename = filename[:225] + '-' + filename[-20:]
+            filename = filename[:225] + "-" + filename[-20:]
             return os.path.join(head, filename)
         else:
             return path

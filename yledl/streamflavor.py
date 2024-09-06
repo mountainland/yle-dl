@@ -30,9 +30,11 @@ class StreamFlavor:
 
 class FailedFlavor(StreamFlavor):
     def __init__(self, error_message):
-        StreamFlavor.__init__(self,
-                              media_type='unknown',
-                              height=None,
-                              width=None,
-                              bitrate=None,
-                              streams=[FailingBackend(error_message)])
+        StreamFlavor.__init__(
+            self,
+            media_type="unknown",
+            height=None,
+            width=None,
+            bitrate=None,
+            streams=[FailingBackend(error_message)],
+        )
