@@ -25,7 +25,7 @@ from requests.adapters import HTTPAdapter
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qs
 from .version import __version__
 
-logger = logging.getLogger('yledl')
+logger = logging.getLogger("yledl")
 
 
 class HttpClient:
@@ -37,21 +37,18 @@ class HttpClient:
         session.timeout = 20
 
         if proxy:
-            session.proxies = {
-                'http': proxy,
-                'https': proxy
-            }
+            session.proxies = {"http": proxy, "https": proxy}
 
         try:
             from requests.packages.urllib3.util.retry import Retry
 
-            retry = Retry(total=3,
-                          backoff_factor=0.5,
-                          status_forcelist=[500, 502, 503, 504])
-            session.mount('http://', HTTPAdapter(max_retries=retry))
-            session.mount('https://', HTTPAdapter(max_retries=retry))
+            retry = Retry(
+                total=3, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504]
+            )
+            session.mount("http://", HTTPAdapter(max_retries=retry))
+            session.mount("https://", HTTPAdapter(max_retries=retry))
         except ImportError:
-            logger.warning('Requests library is too old. Retrying not supported.')
+            logger.warning("Requests library is too old. Retrying not supported.")
 
         return session
 
@@ -70,45 +67,45 @@ class HttpClient:
         response = self.get(url, extra_headers)
         metacharset = html_meta_charset(response.content)
         if metacharset:
-            logger.debug(f'HTML meta charset: {metacharset}')
+            logger.debug(f"HTML meta charset: {metacharset}")
             response.encoding = metacharset
 
         try:
             page = response.text
             return lxml.html.fromstring(page)
         except lxml.etree.XMLSyntaxError as ex:
-            logger.warning(f'HTML syntax error: {str(ex)}')
+            logger.warning(f"HTML syntax error: {str(ex)}")
             return None
         except lxml.etree.ParserError as ex:
-            logger.warning(f'HTML parsing error: {str(ex)}')
+            logger.warning(f"HTML parsing error: {str(ex)}")
             return None
 
     def download_to_file(self, url, destination_filename):
         enc = sys.getfilesystemencoding()
-        encoded_filename = destination_filename.encode(enc, 'replace')
-        logger.debug(f'HTTP GET {url}')
-        with open(encoded_filename, 'wb') as output:
+        encoded_filename = destination_filename.encode(enc, "replace")
+        logger.debug(f"HTTP GET {url}")
+        with open(encoded_filename, "wb") as output:
             r = requests.get(url, headers=yledl_headers(), stream=True, timeout=20)
             r.raise_for_status()
             for chunk in r.iter_content(chunk_size=4096):
                 output.write(chunk)
 
     def get(self, url, extra_headers=None):
-        if url.find('://') == -1:
-            url = f'http://{url}'
-        if '#' in url:
-            url = url[:url.find('#')]
+        if url.find("://") == -1:
+            url = f"http://{url}"
+        if "#" in url:
+            url = url[: url.find("#")]
 
         headers = yledl_headers()
         if extra_headers:
             headers.update(extra_headers)
 
-        logger.debug(f'HTTP GET {url}')
+        logger.debug(f"HTTP GET {url}")
         r = self._session.get(url, headers=headers)
-        logger.debug(f'HTTP status code: {r.status_code}')
-        logger.debug('HTTP response headers:')
+        logger.debug(f"HTTP status code: {r.status_code}")
+        logger.debug("HTTP response headers:")
         for name, value in r.headers.items():
-            logger.debug(f'{name}: {value}')
+            logger.debug(f"{name}: {value}")
         r.raise_for_status()
 
         return r
@@ -118,12 +115,12 @@ class HttpClient:
         if extra_headers:
             headers.update(extra_headers)
 
-        logger.debug(f'HTTP POST {url}')
+        logger.debug(f"HTTP POST {url}")
         r = self._session.post(url, json=json_data, headers=headers)
-        logger.debug(f'HTTP status code: {r.status_code}')
-        logger.debug('HTTP response headers:')
+        logger.debug(f"HTTP status code: {r.status_code}")
+        logger.debug("HTTP response headers:")
         for name, value in r.headers.items():
-            logger.debug(f'{name}: {value}')
+            logger.debug(f"{name}: {value}")
         r.raise_for_status()
 
         return r
@@ -131,19 +128,19 @@ class HttpClient:
 
 def yledl_headers():
     headers = requests.utils.default_headers()
-    headers.update({'User-Agent': yledl_user_agent()})
+    headers.update({"User-Agent": yledl_user_agent()})
     return headers
 
 
 def yledl_user_agent():
-    major = __version__.split(' ')[0]
-    return f'yle-dl/{major}'
+    major = __version__.split(" ")[0]
+    return f"yle-dl/{major}"
 
 
 def html_meta_charset(html_bytes):
-    metacharset = re.search(br'<meta [^>]*?charset="(.*?)"', html_bytes)
+    metacharset = re.search(rb'<meta [^>]*?charset="(.*?)"', html_bytes)
     if metacharset:
-        return metacharset.group(1).decode('ASCII')
+        return metacharset.group(1).decode("ASCII")
     else:
         return None
 
@@ -158,5 +155,5 @@ def update_url_query(url, new_query_parameters):
     params = {k: v[0] for k, v in params.items()}
     params.update(new_query_parameters)
     q = urlencode(params)
-    parts = (parsed[0], parsed[1], parsed[2], '', q, '')
+    parts = (parsed[0], parsed[1], parsed[2], "", q, "")
     return urlunparse(parts)

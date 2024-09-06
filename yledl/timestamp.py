@@ -20,7 +20,7 @@ import re
 from datetime import datetime
 
 
-logger = logging.getLogger('yledl')
+logger = logging.getLogger("yledl")
 
 
 def parse_areena_timestamp(timestamp):
@@ -30,18 +30,19 @@ def parse_areena_timestamp(timestamp):
     timestamp = timestamp.strip()
     parsed = parse_areena_timestamp_py3(timestamp)
     if parsed is None:
-        logger.warning(f'Failed to parse timestamp: {timestamp}')
+        logger.warning(f"Failed to parse timestamp: {timestamp}")
 
     return parsed
 
 
 def parse_areena_timestamp_py3(timestamp):
     # Python prior to 3.7 doesn't support a colon in the timezone
-    if re.search(r'\d\d:\d\d$', timestamp):
+    if re.search(r"\d\d:\d\d$", timestamp):
         timestamp = timestamp[:-3] + timestamp[-2:]
 
-    return (strptime_or_none(timestamp, '%Y-%m-%dT%H:%M:%S.%f%z') or
-            strptime_or_none(timestamp, '%Y-%m-%dT%H:%M:%S%z'))
+    return strptime_or_none(timestamp, "%Y-%m-%dT%H:%M:%S.%f%z") or strptime_or_none(
+        timestamp, "%Y-%m-%dT%H:%M:%S%z"
+    )
 
 
 def strptime_or_none(timestamp, format):
@@ -54,15 +55,15 @@ def strptime_or_none(timestamp, format):
 def format_finnish_short_weekday_and_date(d):
     """Format a datetime object as Finnish weekday and date ("pe 9.9.2022")."""
     short_weekday_names = {
-        '1': 'ma',
-        '2': 'ti',
-        '3': 'ke',
-        '4': 'to',
-        '5': 'pe',
-        '6': 'la',
-        '7': 'su',
+        "1": "ma",
+        "2": "ti",
+        "3": "ke",
+        "4": "to",
+        "5": "pe",
+        "6": "la",
+        "7": "su",
     }
 
-    weekday_name = short_weekday_names[d.strftime('%u')]
+    weekday_name = short_weekday_names[d.strftime("%u")]
     short_date = f'{d.strftime("%d").lstrip("0")}.{d.strftime("%m").lstrip("0")}.{d.strftime("%Y")}'
-    return f'{weekday_name} {short_date}'
+    return f"{weekday_name} {short_date}"

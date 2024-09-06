@@ -24,15 +24,15 @@ from .version import __version__
 from .yledl import execute_action, StreamAction
 
 __all__ = [
-    '__version__',
-    'execute_action',
-    'YleDlDownloader',
-    'StreamFilters',
-    'DownloadLimits',
-    'IOContext',
-    'Backends',
-    'StreamAction',
-    'RD_SUCCESS',
-    'RD_FAILED',
-    'RD_INCOMPLETE'
+    "__version__",
+    "execute_action",
+    "YleDlDownloader",
+    "StreamFilters",
+    "DownloadLimits",
+    "IOContext",
+    "Backends",
+    "StreamAction",
+    "RD_SUCCESS",
+    "RD_FAILED",
+    "RD_INCOMPLETE",
 ]

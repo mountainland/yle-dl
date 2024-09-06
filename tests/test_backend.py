@@ -19,8 +19,8 @@ from yledl import IOContext, RD_SUCCESS
 from yledl.backends import DASHHLSBackend, WgetBackend
 
 
-tv1_url = 'https://yletv-lh.akamaihd.net/i/yletv1hls_1@103188/master.m3u8'
-io = IOContext(destdir='/tmp/')
+tv1_url = "https://yletv-lh.akamaihd.net/i/yletv1hls_1@103188/master.m3u8"
+io = IOContext(destdir="/tmp/")
 
 
 class MockHLSBackend(DASHHLSBackend):
@@ -54,7 +54,7 @@ class MockWgetBackend(WgetBackend):
 def test_hls_backend_save_stream():
     backend = MockHLSBackend(tv1_url, program_id=0)
 
-    res = backend.save_stream('test.mkv', clip=None, io=io)
+    res = backend.save_stream("test.mkv", clip=None, io=io)
 
     assert res == RD_SUCCESS
     assert len(backend.executed_commands) == 1
@@ -72,9 +72,9 @@ def test_hls_backend_pipe():
 
 
 def test_wget_backend_save_stream():
-    backend = MockWgetBackend(tv1_url, file_extension='.mkv')
+    backend = MockWgetBackend(tv1_url, file_extension=".mkv")
 
-    res = backend.save_stream('test.mkv', clip=None, io=io)
+    res = backend.save_stream("test.mkv", clip=None, io=io)
 
     assert res == RD_SUCCESS
     assert len(backend.executed_commands) == 1
@@ -82,7 +82,7 @@ def test_wget_backend_save_stream():
 
 
 def test_wget_backend_pipe():
-    backend = MockWgetBackend(tv1_url, file_extension='.mkv')
+    backend = MockWgetBackend(tv1_url, file_extension=".mkv")
 
     res = backend.pipe(io)
 

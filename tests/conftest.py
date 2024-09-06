@@ -19,12 +19,17 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption('--geoblocked', action='store_true',
-                     help='Enable get-blocked tests that work only in Finland')
+    parser.addoption(
+        "--geoblocked",
+        action="store_true",
+        help="Enable get-blocked tests that work only in Finland",
+    )
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "geoblocked: get-blocked test that work only in Finland")
+    config.addinivalue_line(
+        "markers", "geoblocked: get-blocked test that work only in Finland"
+    )
 
 
 def pytest_collection_modifyitems(config, items):

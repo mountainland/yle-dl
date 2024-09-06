@@ -15,15 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with yle-dl. If not, see <https://www.gnu.org/licenses/>.
 
-default_languages = ['fin', 'swe']
+default_languages = ["fin", "swe"]
 
 
 class TranslationChooser:
     def __init__(self, preferred_three_letter_codes):
         if preferred_three_letter_codes:
             preferred = [x.lower() for x in preferred_three_letter_codes]
-            self.languages = preferred + \
-                [x for x in default_languages if x not in preferred]
+            self.languages = preferred + [
+                x for x in default_languages if x not in preferred
+            ]
         else:
             self.languages = list(default_languages)
 
@@ -54,5 +55,5 @@ class TranslationChooser:
 
 
 def two_letter_language_code(three_letter_code):
-    code_map = {'fin': 'fi', 'swe': 'sv', 'sme': 'se'}
+    code_map = {"fin": "fi", "swe": "sv", "sme": "se"}
     return code_map.get(three_letter_code)
